@@ -1,0 +1,243 @@
+#include <node.h>	/* 必須 */
+#include <uv.h>		/* 非同期コールバックの為 */
+#include <thread>	/* for std::this_thread::sleep_for() */
+using namespace v8;	/* 必須 */
+
+/* スレッド間情報(送信) */
+struct send_inf
+{
+	Persistent<String>	strSnd;		/* 送信文字列 */
+	int timeout;					/* タイムアウト値 */
+	Persistent<Function> callback;	/* 非同期処理完了コールバック関数 */
+	Isolate* isolate;
+	int result;						/* 結果(待機した秒) */
+	char *p;
+};
+
+HANDLE hRs232c;
+
+/* バックグラウンド処理実行関数 */
+void _sendWait(uv_work_t* req) {
+
+
+
+	send_inf* inf = static_cast<send_inf*>(req->data);	/* 情報引き継ぎ */
+	
+	Local<String> p =  Local<String>::New(inf->isolate, inf->strSnd);
+//	v8::String pp();
+//	p.Cast<String>(pp);
+//	String s = p->ToString();
+
+//	String::Utf8Value strSnd(pp);
+	printf("rrrrrrrrrrr\n");
+//	char *pcSnd = *strSnd;
+
+	printf("aaaaaaaaaa=%s\n", inf->p);
+
+
+	OVERLAPPED ovWrite;
+	DWORD dwWritten;
+	memset(&ovWrite, 0, sizeof(ovWrite));
+	ovWrite.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	if (ovWrite.hEvent == NULL){
+		inf->result = -1;
+		return;
+	}
+	if (!WriteFile(hRs232c, inf->p, strlen(inf->p), &dwWritten, &ovWrite)){
+		if (GetLastError() != ERROR_IO_PENDING){
+			inf->result = -2;
+			return;
+		}
+		DWORD res = WaitForSingleObject(ovWrite.hEvent, inf->timeout);
+		switch (res)
+		{
+			case WAIT_OBJECT_0:
+				if (!GetOverlappedResult(hRs232c, &ovWrite, &dwWritten, FALSE))
+				{
+					inf->result = -3;
+					return;
+				}
+				else
+				{
+					inf->result = 0;
+					return;
+				}
+			break;
+		default:
+			inf->result = -4;
+			return;
+		}
+		inf->result = -5;
+		return;
+	}
+	else{
+		inf->result = 0;
+		return;
+	}
+}
+
+/* バックグラウンド処理完了関数 */
+void _sendEnd(uv_work_t* req, int status) {
+
+	send_inf* data = static_cast<send_inf*>(req->data);	/* 情報引き継ぎ */
+	Local<Value> argv[1] = { Number::New(data->isolate, data->result) };		/* コールバック用引数設定 */
+	Local<Function> cb = Local<Function>::New(data->isolate, data->callback);	/* コールバック関数設定 */
+	cb->Call(data->isolate->GetCurrentContext()->Global(), 1, argv);			/* コールバック */
+	/* 後処理 */
+	delete data;
+	delete req;
+}
+
+
+
+
+
+//------------------------------------------------------------------------------
+//[関数]シリアルポートのオープン
+//[引数]args[0]	COMポート名(string)
+//		args[1] ボーレート(Number)
+//		args[2] データビット長(Number)
+//		args[3] ストップビット長(Number)
+//		args[4] パリティ(Number)
+//[戻値]0:	正常
+//------------------------------------------------------------------------------
+void serialOpen(const FunctionCallbackInfo<Value>& args) {
+
+	Isolate* isolate = Isolate::GetCurrent();
+	HandleScope scope(isolate);
+
+	/* 引数の数チェック */
+	if(args.Length() != 5){
+		isolate->ThrowException(Exception::TypeError(
+		    String::NewFromUtf8(isolate, "Wrong number of arguments")));
+		return;
+	}
+	/* 引数の型チェック */
+	if(!args[0]->IsString() ||
+	   !args[1]->IsNumber() ||
+	   !args[2]->IsNumber() ||
+	   !args[3]->IsNumber() ||
+	   !args[4]->IsNumber()){
+		isolate->ThrowException(Exception::TypeError(
+		    String::NewFromUtf8(isolate, "Wrong arguments")));
+		return;
+	}
+	/* 引数抽出 */
+	String::Utf8Value strCom(args[0]);
+	char *pcCom = *strCom;
+	int iBoudRate = (int)args[1]->NumberValue();
+	int iByteSize = (int)args[2]->NumberValue();
+	int iStopBits = (int)args[3]->NumberValue();
+	int iParity = (int)args[4]->NumberValue();
+
+	/* ハンドル取得 */
+    hRs232c = CreateFile(
+        pcCom,GENERIC_READ|GENERIC_WRITE,0,NULL,
+        OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL|FILE_FLAG_OVERLAPPED,NULL);
+    if ( hRs232c == INVALID_HANDLE_VALUE ) {
+		isolate->ThrowException(Exception::TypeError(
+			String::NewFromUtf8(isolate, "CreateFile(INVALID_HANDLE_VALUE)")));
+		return;
+    }
+	/* COMポートのセットアップ */
+	if (!SetupComm(hRs232c, 1024, 1024)){
+		isolate->ThrowException(Exception::TypeError(
+			String::NewFromUtf8(isolate, "SetupComm(ERROR)")));
+		return;
+	}
+	/* ポートの設定変更 */
+	DCB dcb;
+	memset(&dcb, NULL, sizeof(DCB));
+	dcb.DCBlength = sizeof(DCB);
+	GetCommState(hRs232c, &dcb);
+	dcb.BaudRate = iBoudRate;
+	dcb.Parity = iParity;
+	dcb.StopBits = iStopBits;
+	dcb.ByteSize = iByteSize;
+	if (!SetCommState(hRs232c, &dcb)){
+		isolate->ThrowException(Exception::TypeError(
+			String::NewFromUtf8(isolate, "SetCommState(ERROR)")));
+		return;
+	}
+	args.GetReturnValue().Set(0);
+}
+//------------------------------------------------------------------------------
+//[関数]シリアルポートのクローズ
+//[引数]なし
+//[戻値]0:	正常
+//------------------------------------------------------------------------------
+void serialClose(const FunctionCallbackInfo<Value>& args) {
+
+	Isolate* isolate = Isolate::GetCurrent();
+	HandleScope scope(isolate);
+	CloseHandle(hRs232c);
+	args.GetReturnValue().Set(0);
+}
+//------------------------------------------------------------------------------
+//[関数]シリアルポートの送信
+//[引数]args[0]	送信文字列(string)
+//		args[1] タイムアウト(ms)(Number)
+//		args[2] 完了コールバック関数(Function)
+//[戻値]0:	正常
+//------------------------------------------------------------------------------
+void serialSend(const FunctionCallbackInfo<Value>& args) {
+
+	Isolate* isolate = Isolate::GetCurrent();
+	HandleScope scope(isolate);
+
+	/* 引数チェック(引数の数) */
+	if (args.Length() != 3){
+		isolate->ThrowException(Exception::TypeError(
+			String::NewFromUtf8(isolate, "Wrong number of arguments")));
+		return;
+	}
+	/* 引数チェック(引数の型) */
+	if (!args[0]->IsString() || !args[1]->IsNumber() || !args[2]->IsFunction()) {
+		isolate->ThrowException(Exception::TypeError(
+			String::NewFromUtf8(isolate, "Wrong arguments")));
+		return;
+	}
+	/* 引数の情報を記憶 */
+	send_inf *inf = new send_inf;
+
+	String::Utf8Value strCom(args[0]);
+
+	node::
+
+
+	inf->strSnd.Reset(isolate, args[0].As<String>());
+	inf->timeout = args[1]->Int32Value();
+	inf->callback.Reset(isolate, args[2].As<Function>());
+	inf->isolate = isolate;
+	inf->result = 0;
+	inf->p = *strCom;
+
+//	String::Utf8Value strCom(*(inf->strSnd));
+//	char *p = *strCom;
+//	printf("aaaaa = %s\n", p);
+
+	printf("tttt\n");
+
+	/* バックグラウンドで実行 */
+	uv_work_t *req_send = new uv_work_t;
+	req_send->data = inf;
+	uv_queue_work(uv_default_loop(), req_send, _sendWait, _sendEnd);
+
+	/* とりあえず処理は戻す */
+	args.GetReturnValue().Set(0);
+}
+
+
+
+/* ここに外部から呼ばれる関数を書いていく */
+/* 外部から呼ばれる名前と内部の関数名のひも付け */
+void init(Handle<Object> exports) {
+  NODE_SET_METHOD(exports, "open", serialOpen);
+  NODE_SET_METHOD(exports, "close", serialClose);
+  NODE_SET_METHOD(exports, "send", serialSend);
+//  NODE_SET_METHOD(exports, "recv", serialRecv);
+//  NODE_SET_METHOD(exports, "ctrl", serialCtrl);
+}
+
+/* モジュールがrequireされる時に呼ばれる */
+NODE_MODULE(asyncWait, init)

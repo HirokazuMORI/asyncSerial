@@ -1,0 +1,14 @@
+﻿2015/07/06 18:10:39 にビルドを開始しました。
+     1>ノード 2 上のプロジェクト "C:\Users\mori\nodejs_addon\asyncSerial\build\asyncSerial.vcxproj" (Build ターゲット)。
+     1>ClCompile:
+         C:\Program Files\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /I"C:\Users\mori\.node-gyp\0.10.26\src" /I"C:\Users\mori\.node-gyp\0.10.26\deps\uv\include" /I"C:\Users\mori\.node-gyp\0.10.26\deps\v8\include" /Zi /nologo /W3 /WX- /Od /Oy- /D NODE_GYP_MODULE_NAME=asyncSerial /D WIN32 /D _CRT_SECURE_NO_DEPRECATE /D _CRT_NONSTDC_NO_DEPRECATE /D BUILDING_V8_SHARED=1 /D BUILDING_UV_SHARED=1 /D BUILDING_NODE_EXTENSION /D DEBUG /D _DEBUG /D _WINDLL /GF /Gm- /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\obj\asyncSerial\\" /Fd"Debug\obj\asyncSerial\vc120.pdb" /Gd /TP /wd4251 /analyze- /errorReport:prompt ..\asyncSerial.cc
+         asyncSerial.cc
+     1>C:\Users\mori\.node-gyp\0.10.26\deps\v8\include\v8.h(184): warning C4506: インライン関数 'v8::Persistent<v8::Object> v8::Persistent<v8::Object>::New(v8::Handle<v8::Object>)' は定義されていません。
+       Link:
+         C:\Program Files\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\mori\nodejs_addon\asyncSerial\build\Debug\asyncSerial.node" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib DelayImp.lib "C:\Users\mori\.node-gyp\0.10.26\Debug\node.lib" /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\mori\nodejs_addon\asyncSerial\build\Debug\asyncSerial.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /MACHINE:X86 /SAFESEH /DLL Debug\obj\asyncSerial\asyncSerial.obj
+         asyncSerial.vcxproj -> C:\Users\mori\nodejs_addon\asyncSerial\build\Debug\\asyncSerial.node
+     1>プロジェクト "C:\Users\mori\nodejs_addon\asyncSerial\build\asyncSerial.vcxproj" (Build ターゲット) のビルドが完了しました。
+
+ビルドに成功しました。
+
+経過時間 00:00:07.91

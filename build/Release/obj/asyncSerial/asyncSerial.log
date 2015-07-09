@@ -1,0 +1,17 @@
+﻿2015/07/06 14:39:40 にビルドを開始しました。
+     1>ノード 2 上のプロジェクト "C:\Users\mori\nodejs_addon\asyncSerial\build\asyncSerial.vcxproj" (Rebuild ターゲット)。
+     1>ClCompile:
+         C:\Program Files\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /I"C:\Users\mori\.node-gyp\0.10.26\src" /I"C:\Users\mori\.node-gyp\0.10.26\deps\uv\include" /I"C:\Users\mori\.node-gyp\0.10.26\deps\v8\include" /Zi /nologo /W3 /WX- /Ox /Ob2 /Oi /Ot /Oy /GL /D NODE_GYP_MODULE_NAME=asyncSerial /D WIN32 /D _CRT_SECURE_NO_DEPRECATE /D _CRT_NONSTDC_NO_DEPRECATE /D BUILDING_V8_SHARED=1 /D BUILDING_UV_SHARED=1 /D BUILDING_NODE_EXTENSION /D _WINDLL /GF /Gm- /EHsc /MT /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /GR- /Fo"Release\obj\asyncSerial\\" /Fd"Release\obj\asyncSerial\vc120.pdb" /Gd /TP /wd4251 /analyze- /errorReport:prompt /MP ..\asyncSerial.cc
+         asyncSerial.cc
+     1>C:\Users\mori\.node-gyp\0.10.26\deps\v8\include\v8.h(184): warning C4506: インライン関数 'v8::Persistent<v8::Object> v8::Persistent<v8::Object>::New(v8::Handle<v8::Object>)' は定義されていません。
+       Link:
+         C:\Program Files\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\mori\nodejs_addon\asyncSerial\build\Release\asyncSerial.node" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib DelayImp.lib "C:\Users\mori\.node-gyp\0.10.26\Release\node.lib" /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\mori\nodejs_addon\asyncSerial\build\Release\asyncSerial.pdb" /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /MACHINE:X86 /SAFESEH /DLL Release\obj\asyncSerial\asyncSerial.obj
+            ライブラリ C:\Users\mori\nodejs_addon\asyncSerial\build\Release\asyncSerial.lib とオブジェクト C:\Users\mori\nodejs_addon\asyncSerial\build\Release\asyncSerial.exp を作成中
+         コード生成しています。
+         コード生成が終了しました。
+         asyncSerial.vcxproj -> C:\Users\mori\nodejs_addon\asyncSerial\build\Release\\asyncSerial.node
+     1>プロジェクト "C:\Users\mori\nodejs_addon\asyncSerial\build\asyncSerial.vcxproj" (Rebuild ターゲット) のビルドが完了しました。
+
+ビルドに成功しました。
+
+経過時間 00:00:01.20
